@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-cah%@-*)sg*!vw91w3s6n@z69+ve*kh=2&^urlalx9mgo+ma1&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
 
 
 # Application definition
@@ -115,3 +115,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+import os
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
+
+# Production settings
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']
+    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5173').split(',')
+
