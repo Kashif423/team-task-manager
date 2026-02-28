@@ -2,9 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Team
 
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class TeamListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -41,6 +45,7 @@ class TeamListCreateView(APIView):
         }, status=201)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class TeamDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -69,7 +74,6 @@ class TeamDetailView(APIView):
         if err: return err
         if team.owner != request.user:
             return Response({'error': 'Only the owner can edit this team.'}, status=403)
-
         team.name = request.data.get('name', team.name).strip()
         team.description = request.data.get('description', team.description).strip()
         team.save()
@@ -84,6 +88,7 @@ class TeamDetailView(APIView):
         return Response({'message': 'Team deleted.'})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AddMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -92,15 +97,12 @@ class AddMemberView(APIView):
             team = Team.objects.get(pk=pk)
         except Team.DoesNotExist:
             return Response({'error': 'Team not found.'}, status=404)
-
         if team.owner != request.user:
             return Response({'error': 'Only the owner can add members.'}, status=403)
-
         username = request.data.get('username', '').strip()
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             return Response({'error': 'User not found.'}, status=404)
-
         team.members.add(user)
         return Response({'message': f'{username} added to team.'})

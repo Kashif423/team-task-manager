@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from teams.models import Team
 from .models import Task
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 def task_data(task):
     return {
@@ -20,6 +21,26 @@ def task_data(task):
     }
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class AddMemberView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            team = Team.objects.get(pk=pk)
+        except Team.DoesNotExist:
+            return Response({'error': 'Team not found.'}, status=404)
+        if team.owner != request.user:
+            return Response({'error': 'Only the owner can add members.'}, status=403)
+        username = request.data.get('username', '').strip()
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=404)
+        team.members.add(user)
+        return Response({'message': f'{username} added to team.'})
+    
+@method_decorator(csrf_exempt, name='dispatch')
 class TaskListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -83,7 +104,7 @@ class TaskListCreateView(APIView):
         )
         return Response(task_data(task), status=201)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class TaskDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -126,3 +147,4 @@ class TaskDetailView(APIView):
         if err: return err
         task.delete()
         return Response({'message': 'Task deleted.'})
+    

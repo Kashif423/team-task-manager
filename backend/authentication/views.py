@@ -1,11 +1,15 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status
 import re
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -14,7 +18,6 @@ class RegisterView(APIView):
         email = request.data.get('email', '').strip()
         password = request.data.get('password', '')
 
-        # Validation
         if not username or not email or not password:
             return Response({'error': 'All fields are required.'}, status=400)
         if len(password) < 8:
@@ -34,6 +37,7 @@ class RegisterView(APIView):
         }, status=201)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -54,7 +58,7 @@ class LoginView(APIView):
             'user': {'id': user.id, 'username': user.username, 'email': user.email}
         })
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -62,10 +66,16 @@ class LogoutView(APIView):
         logout(request)
         return Response({'message': 'Logged out successfully.'})
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
         return Response({'id': user.id, 'username': user.username, 'email': user.email})
+
+
+@ensure_csrf_cookie
+def csrf_token_view(request):
+    token = get_token(request)
+    return JsonResponse({'csrfToken': token})
