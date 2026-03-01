@@ -20,3 +20,14 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+from django.contrib import admin
+from django.urls import path
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
+urlpatterns = [
+    path("", health_check),  # 👈 IMPORTANT
+    path("admin/", admin.site.urls),
+]
