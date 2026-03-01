@@ -123,4 +123,9 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
     DEBUG = False
     ALLOWED_HOSTS = ['*']
     CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5173').split(',')
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']
+    # This is the "magic" line for Railway networking
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
