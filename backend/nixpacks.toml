@@ -9,12 +9,3 @@ cmds = ["python manage.py collectstatic --noinput", "python manage.py migrate"]
 
 [start]
 cmd = "gunicorn core.wsgi --bind 0.0.0.0:$PORT"
-```
-
-Save it, then commit and push:
-```
-cd D:\TaskInternship
-git add .
-git commit -m "Add nixpacks config for Railway deployment"
-git push origin backend
-git push origin backend:main --force
